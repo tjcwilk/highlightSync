@@ -130,7 +130,7 @@ class Instapaper():
             else:
 
                 print("error getting highlights, api returned %d" % response.status_code)
-                return false
+                return False
 
 
         except Exception as error_message:
