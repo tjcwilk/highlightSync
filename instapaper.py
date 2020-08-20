@@ -139,6 +139,41 @@ class Instapaper():
 
 
 
+    def formulate_highlights(self):
+
+        aggregated_highlights = []
+
+        bookmarks = self.get_bookmarks("archive", 2)
+
+        for bookmark in bookmarks:
+  
+            if "bookmark_id" not in bookmark:
+                continue
+
+            highlights = myInstapaper.get_highlights(bookmark['bookmark_id'])
+            
+            if(highlights):
+
+                new_highlights = []
+                for highlight in highlights:
+                    new_highlights.append({'highlight_id': highlight['highlight_id'],
+                                            'highlight_text': highlight['text']})
+
+                new_bookmark = {}
+                new_bookmark['bookmark_id'] = bookmark['bookmark_id']
+                new_bookmark['hash'] = bookmark['hash']
+                new_bookmark['title'] = bookmark['title']
+                new_bookmark['url'] = bookmark['url']
+                new_bookmark['highlights'] = new_highlights
+
+                aggregated_highlights.append(new_bookmark)
+
+
+        return aggregated_highlights
+
+
+
+
 
 if __name__ == "__main__":
 
@@ -149,12 +184,7 @@ if __name__ == "__main__":
     myInstapaper = Instapaper(secrets.instapaper_consumer_id, secrets.instapaper_consumer_secret)
     myInstapaper.login(secrets.instapaper_username, secrets.instapaper_password)
     
-    bookmarks = myInstapaper.get_bookmarks("archive", 2)
+    formulated_highlights = myInstapaper.formulate_highlights()
+    print(formulated_highlights)
 
-    for item in bookmarks:
   
-        if "bookmark_id" not in item:
-            continue
-
-        Highlights = myInstapaper.get_highlights(item['bookmark_id'])
-        print(Highlights)
