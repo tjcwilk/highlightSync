@@ -2,6 +2,7 @@
 
 import logging
 import requests
+import json
 from requests_oauthlib import OAuth1
 from urllib.parse import urlsplit, parse_qs
 import secrets
@@ -97,7 +98,8 @@ class Instapaper():
 
             if(response.status_code == 200):
 
-                return( response.content.decode('UTF-8') )
+                json_data = json.loads( response.content.decode('UTF-8') )
+                return(json_data)
 
             else:
 
@@ -107,6 +109,33 @@ class Instapaper():
         except Exception as error_message:
 
             print("Error %s" % error_message)
+
+
+
+    def get_highlights(self, bookmark_id):
+
+        logging.info("fetching highlights for bookmark ID %d" % bookmark_id)
+
+        url = "https://www.instapaper.com/api/1.1/bookmarks/%d/highlights" % bookmark_id
+
+        try:
+
+            response = requests.post(url=url, auth=self.oauth)
+
+            if(response.status_code == 200):
+
+                json_data = json.loads( response.content.decode('UTF-8') )
+                return(json_data)
+
+            else:
+
+                print("error getting highlights, api returned %d" % response.status_code)
+                return false
+
+
+        except Exception as error_message:
+
+            print("error: %s" % error_message)
 
 
 
@@ -120,4 +149,12 @@ if __name__ == "__main__":
     myInstapaper = Instapaper(secrets.instapaper_consumer_id, secrets.instapaper_consumer_secret)
     myInstapaper.login(secrets.instapaper_username, secrets.instapaper_password)
     
-    print(myInstapaper.get_bookmarks("archive", 1))
+    bookmarks = myInstapaper.get_bookmarks("archive", 2)
+
+    for item in bookmarks:
+  
+        if "bookmark_id" not in item:
+            continue
+
+        Highlights = myInstapaper.get_highlights(item['bookmark_id'])
+        print(Highlights)
