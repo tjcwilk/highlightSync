@@ -5,12 +5,13 @@ importing it into another.
 
 This is a work in progress project.
 
-Roadmap -
+Roadmap:
 
 - Highlight sources
- - Instapaper
- - Kindle Highlights
- - GetPocket
+    - Instapaper
+    - Kindle Highlights
+    - GetPocket
+
 
 - Destination locations
     - Evernote
