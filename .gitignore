@@ -132,3 +132,4 @@ dmypy.json
 secrets.py
 .DS_Store
 .vscode/settings.json
+.vscode/settings.json

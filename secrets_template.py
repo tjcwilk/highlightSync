@@ -19,3 +19,9 @@ instapaper_consumer_secret = "REPLACE_ME"
 # been submitted to instapaper. 
 instapaper_username = "REPLACE ME"
 instapaper_password = "REPLACE_ME"
+
+# This is the Client consumer API key and secret, for your Evernote application.
+# Request this at https://dev.evernote.com/doc/
+
+evernote_client_key = "REPLACE_ME"
+evernote_client_secret = "REPLACE_ME"
