@@ -23,7 +23,6 @@ class Instapaper_to_evernote():
         self.db_collection = self.db[user]
 
 
-
     def setup_instapaper(self, username, password):
 
         logging.info("Synchroniser:: Setting up instapaper")
@@ -32,7 +31,6 @@ class Instapaper_to_evernote():
         self.instapaper_instance.login(username, password)
 
         logging.info("Synchroniser:: Instapaper Setup Complete")
-
 
 
     def setup_evernote(self, oauth_token):
@@ -45,13 +43,11 @@ class Instapaper_to_evernote():
         logging.info("Synchroniser:: Evernote Setup Complete")
 
 
-
     def run_sync(self):
 
-        
         highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
 
-        
+
         for highlight in highlights:
 
             if( self.check_already_syncd(highlight['bookmark_id']) ):
@@ -71,7 +67,6 @@ class Instapaper_to_evernote():
                 self.db_collection.insert_one(new_sync_marker)
                 
 
-
     def check_already_syncd(self, idenfitier):
 
         exists = self.db_collection.find_one({"unique_id": idenfitier})
@@ -80,7 +75,6 @@ class Instapaper_to_evernote():
             return True
         else:
             return False
-
 
 
     def save_article_to_evernote(self, article, notebook):
@@ -99,7 +93,6 @@ class Instapaper_to_evernote():
             highlights += escape(highlight['highlight_text'])
             highlights += '</div><br/>'
 
-
         content = '<?xml version="1.0" encoding="UTF-8"?>'
         content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
         content += '<en-note>'
@@ -108,7 +101,6 @@ class Instapaper_to_evernote():
         content += highlights
         content += '</en-note>'
 
-
         # Create note
 
         notebook_guid = self.evernote_instance.get_notebook_guid(notebook)
@@ -116,12 +108,9 @@ class Instapaper_to_evernote():
         self.evernote_instance.create_note(title, content, notebook_guid)
 
 
-
-
-
 if __name__ == "__main__":
     
-    print("---- synchroniser ---- ")
+    print("---- synchronise instapaper to evernote ---- ")
 
     logging.basicConfig(level=logging.INFO)
 
@@ -134,11 +123,3 @@ if __name__ == "__main__":
         time.sleep(1800)
         #1800 = 30mins
         #3600 = 1 hr
-  
-    
-
-
-
-
-
-    
