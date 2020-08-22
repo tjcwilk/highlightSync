@@ -6,6 +6,7 @@ from instapaper import Instapaper
 from evernote_lib import Evernote
 from pymongo import MongoClient
 from xml.sax.saxutils import escape
+import time
 
 
 class Synchroniser():
@@ -132,7 +133,15 @@ if __name__ == "__main__":
     instapaper_to_evernote.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
     instapaper_to_evernote.setup_evernote(secrets.evernote_oauth_token)
 
-    instapaper_to_evernote.run_sync()
+    while True:
+        instapaper_to_evernote.run_sync()
+        time.sleep(1800)
+        #1800 = 30mins
+        #3600 = 1 hr
+  
+    
+
+
 
 
 
