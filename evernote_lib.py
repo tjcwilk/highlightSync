@@ -49,7 +49,7 @@ class Evernote:
 
         else:
 
-            logging.info("Evernote:: No OAuth Key, initiating authorisatiion flow")
+            logging.info("Evernote:: No OAuth Key, initiating authorisation flow")
 
             # Follow the OAuth 1.0 flow
 
@@ -127,7 +127,7 @@ class Evernote:
         
         if 'oauth_verifier' in params:
 
-            logging.info("Evernote:: User sucessfully authorised oauth flow")
+            logging.info("Evernote:: User successfully authorised oauth flow")
             self.oauth_verifier = params['oauth_verifier'][0]
 
             return True
@@ -200,12 +200,10 @@ class Evernote:
         note.title = title
         note.content = content
 
-        
-
         if(notebook_guid):
             note.notebookGuid = notebook_guid
 
-        created_note = self.evernote_note_store.createNote(note)
+        self.evernote_note_store.createNote(note)
 
 
     def get_notebook_guid(self, notebook_name):
