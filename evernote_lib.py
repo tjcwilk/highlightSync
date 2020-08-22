@@ -78,7 +78,7 @@ class Evernote:
 
         callback_url = 'http://localhost:8080'
         temporary_credential_url_prod = "https://www.evernote.com/oauth"
-        temporary_credential_url_sandbox = "https://sandbox.evernote.com/oauth"
+        # temporary_credential_url_sandbox = "https://sandbox.evernote.com/oauth"
 
         try:
 
@@ -114,7 +114,7 @@ class Evernote:
 
         logging.info("Evernote:: Getting User OAuth authorization permission")
 
-        authorization_url_sandbox = "https://sandbox.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
+        # authorization_url_sandbox = "https://sandbox.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
         authorization_url_prod = "https://www.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
 
 
@@ -143,7 +143,7 @@ class Evernote:
 
         logging.info("Evernote:: getting OAuth access token")
 
-        url_sandbox = "https://sandbox.evernote.com/oauth"
+        # url_sandbox = "https://sandbox.evernote.com/oauth"
         url_prod = "https://www.evernote.com/oauth"
 
         oauth = OAuth1( self.CLIENT_KEY,
