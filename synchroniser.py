@@ -4,17 +4,25 @@ import logging
 import secrets
 from instapaper import Instapaper
 from evernote_lib import Evernote
+from pymongo import MongoClient
+from xml.sax.saxutils import escape
 
 
 class Synchroniser():
 
 
-    def __init__(self, sync_from, sync_to):
+    def __init__(self, user, sync_from, sync_to):
 
         logging.info("Synchroniser:: Instance created")
 
+        self.INSTAPAPER_SYNC_LIMIT = 20
+
         self.sync_from = sync_from
         self.sync_to = sync_to
+
+        self.db_client = MongoClient('mongodb://localhost:27017/')
+        self.db = self.db_client['sync_state']
+        self.db_collection = self.db[user]
 
 
 
@@ -44,23 +52,37 @@ class Synchroniser():
 
         if(self.sync_from=="INSTAPAPER" and self.sync_to=="EVERNOTE"):
             
-            highlights = self.instapaper_instance.formulate_highlights(2)
+            highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
+
             
             for highlight in highlights:
 
-                if( self.check_already_syncd() ):
-                    logging.info("Already synchd, skipping: %s" % highlight[''])
+                if( self.check_already_syncd(highlight['bookmark_id']) ):
+
+                    logging.info("Already synchd, skipping: %s" % highlight['title'])
                     continue
+
                 else:
 
                     self.save_article_to_evernote(highlight, 'Articles')
+
+                    new_sync_marker = { "from": self.sync_from,
+                                        "to": self.sync_to,
+                                        "unique_id": highlight['bookmark_id'],
+                                        "unique_id_type" : 'bookmark_id'}
+
+                    self.db_collection.insert_one(new_sync_marker)
                     
 
 
-    def check_already_syncd(self):
+    def check_already_syncd(self, idenfitier):
 
-        # TODO 
-        return False
+        exists = self.db_collection.find_one({"unique_id": idenfitier})
+
+        if(exists):
+            return True
+        else:
+            return False
 
 
 
@@ -72,12 +94,12 @@ class Synchroniser():
 
         title = article['title']
 
-        url = "<div>Url: %s</div><br/><br/>" % (article['url'])
+        url = "<div>Url: %s</div><br/><br/>" % ( escape(article['url']) )
 
         highlights = ''
         for highlight in article['highlights']:
             highlights += '<div>'
-            highlights += highlight['highlight_text']
+            highlights += escape(highlight['highlight_text'])
             highlights += '</div><br/>'
 
 
@@ -85,6 +107,7 @@ class Synchroniser():
         content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
         content += '<en-note>'
         content += url
+        content += '<div>Highlights:</div><br/>'
         content += highlights
         content += '</en-note>'
 
@@ -105,7 +128,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    instapaper_to_evernote = Synchroniser("INSTAPAPER", "EVERNOTE")
+    instapaper_to_evernote = Synchroniser("toby", "INSTAPAPER", "EVERNOTE")
     instapaper_to_evernote.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
     instapaper_to_evernote.setup_evernote(secrets.evernote_oauth_token)
 

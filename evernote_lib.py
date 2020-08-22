@@ -11,6 +11,7 @@ import logging
 import secrets
 
 
+
 class Evernote:
 
     def __init__(self, client_key, client_secret):
@@ -40,7 +41,7 @@ class Evernote:
 
             self.oauth_access_token = oauth_token
 
-            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=True, china=False)
+            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=False, china=False)
             self.evernote_user_store = self.evernote_client.get_user_store()
             self.evernote_note_store = self.evernote_client.get_note_store()
 
@@ -64,7 +65,7 @@ class Evernote:
 
             self.get_access_token()
 
-            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=True, china=False)
+            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=False, china=False)
             self.evernote_user_store = self.evernote_client.get_user_store()
             self.evernote_note_store = self.evernote_client.get_note_store()
 
@@ -87,7 +88,7 @@ class Evernote:
                             signature_method=u'HMAC-SHA1', 
                             signature_type=u'query')
 
-            response = requests.get(temporary_credential_url_sandbox, auth=oauth)
+            response = requests.get(temporary_credential_url_prod, auth=oauth)
 
             if(response.status_code == 200):
 
@@ -114,10 +115,10 @@ class Evernote:
         logging.info("Evernote:: Getting User OAuth authorization permission")
 
         authorization_url_sandbox = "https://sandbox.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
-        authorization_url_production = "https://www.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
+        authorization_url_prod = "https://www.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
 
 
-        print('Please authorize this application, by visiting %s' % authorization_url_sandbox)
+        print('Please authorize this application, by visiting %s' % authorization_url_prod)
         redirect_response = input('Paste the full redirect URL here: ')
 
         params = parse_qs(redirect_response)
@@ -143,6 +144,7 @@ class Evernote:
         logging.info("Evernote:: getting OAuth access token")
 
         url_sandbox = "https://sandbox.evernote.com/oauth"
+        url_prod = "https://www.evernote.com/oauth"
 
         oauth = OAuth1( self.CLIENT_KEY,
                         client_secret=self.CLIENT_SECRET,
@@ -152,7 +154,7 @@ class Evernote:
                         signature_method=u'HMAC-SHA1', 
                         signature_type=u'query')
 
-        response = requests.get(url=url_sandbox, auth=oauth)
+        response = requests.get(url=url_prod, auth=oauth)
 
         if(response.status_code == 200):
 
@@ -164,7 +166,12 @@ class Evernote:
             self.edam_expires = params['edam_expires'][0]
             self.edam_noteStoreUrl = params['edam_noteStoreUrl'][0]
 
-            logging.info("Successfully obtained OAuth access tokens")
+            logging.info("Evernote:: Successfully obtained OAuth access tokens")
+            print("----------------------\n")
+            print(" Your API Access token is:")
+            print("\t%s" % self.oauth_access_token)
+            print("\n\n Copy/Paste this into your secrets file, to save it for next time\n")
+            print("--------------------------\n\n")
 
             return True
 
@@ -192,6 +199,8 @@ class Evernote:
         note = Types.Note()
         note.title = title
         note.content = content
+
+        
 
         if(notebook_guid):
             note.notebookGuid = notebook_guid
