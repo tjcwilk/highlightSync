@@ -9,17 +9,14 @@ from xml.sax.saxutils import escape
 import time
 
 
-class Synchroniser():
+class Instapaper_to_evernote():
 
 
-    def __init__(self, user, sync_from, sync_to):
+    def __init__(self, user):
 
         logging.info("Synchroniser:: Instance created")
 
         self.INSTAPAPER_SYNC_LIMIT = 20
-
-        self.sync_from = sync_from
-        self.sync_to = sync_to
 
         self.db_client = MongoClient('mongodb://localhost:27017/')
         self.db = self.db_client['sync_state']
@@ -51,29 +48,28 @@ class Synchroniser():
 
     def run_sync(self):
 
-        if(self.sync_from=="INSTAPAPER" and self.sync_to=="EVERNOTE"):
-            
-            highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
+        
+        highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
 
-            
-            for highlight in highlights:
+        
+        for highlight in highlights:
 
-                if( self.check_already_syncd(highlight['bookmark_id']) ):
+            if( self.check_already_syncd(highlight['bookmark_id']) ):
 
-                    logging.info("Already synchd, skipping: %s" % highlight['title'])
-                    continue
+                logging.info("Already synchd, skipping: %s" % highlight['title'])
+                continue
 
-                else:
+            else:
 
-                    self.save_article_to_evernote(highlight, 'Articles')
+                self.save_article_to_evernote(highlight, 'Articles')
 
-                    new_sync_marker = { "from": self.sync_from,
-                                        "to": self.sync_to,
-                                        "unique_id": highlight['bookmark_id'],
-                                        "unique_id_type" : 'bookmark_id'}
+                new_sync_marker = { "from": "instapaper",
+                                    "to": "evernote",
+                                    "unique_id": highlight['bookmark_id'],
+                                    "unique_id_type" : 'bookmark_id'}
 
-                    self.db_collection.insert_one(new_sync_marker)
-                    
+                self.db_collection.insert_one(new_sync_marker)
+                
 
 
     def check_already_syncd(self, idenfitier):
@@ -129,7 +125,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    instapaper_to_evernote = Synchroniser("toby", "INSTAPAPER", "EVERNOTE")
+    instapaper_to_evernote = Instapaper_to_evernote("toby")
     instapaper_to_evernote.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
     instapaper_to_evernote.setup_evernote(secrets.evernote_oauth_token)
 
