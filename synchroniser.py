@@ -125,12 +125,12 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    instapaper_to_evernote = Instapaper_to_evernote("toby")
-    instapaper_to_evernote.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
-    instapaper_to_evernote.setup_evernote(secrets.evernote_oauth_token)
+    synchroniser = Instapaper_to_evernote("toby")
+    synchroniser.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
+    synchroniser.setup_evernote(secrets.evernote_oauth_token)
 
     while True:
-        instapaper_to_evernote.run_sync()
+        synchroniser.run_sync()
         time.sleep(1800)
         #1800 = 30mins
         #3600 = 1 hr
