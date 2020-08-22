@@ -68,9 +68,9 @@ class Instapaper_to_evernote():
                 self.db_collection.insert_one(new_sync_marker)
                 
 
-    def check_already_syncd(self, idenfitier):
+    def check_already_syncd(self, identifier):
 
-        exists = self.db_collection.find_one({"unique_id": idenfitier})
+        exists = self.db_collection.find_one({"unique_id": identifier})
 
         if(exists):
             return True
