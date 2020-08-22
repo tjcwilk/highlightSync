@@ -14,6 +14,8 @@ class Instapaper():
 
 
     def __init__(self, consumer_id, consumer_secret): 
+
+        logging.info("Instapaper:: Instance created")
         
         self.API_CONSUMER_ID = consumer_id
         self.API_CONSUMER_SECRET = consumer_secret
@@ -26,7 +28,7 @@ class Instapaper():
 
     def login(self, username, password):
 
-        logging.info("Logging in user: %s" % username)
+        logging.info("Instapaper:: Logging in user: %s" % username)
 
         url = "https://www.instapaper.com/api/1/oauth/access_token"
 
@@ -49,7 +51,8 @@ class Instapaper():
                                 self.USER_OAUTH_TOKEN,
                                 self.USER_OAUTH_SECRET)
 
-            logging.info('User %s successfully logged in' % username )
+            logging.info("Instapaper:: Logging Success")
+
 
         except Exception as error_message:
 
@@ -59,7 +62,7 @@ class Instapaper():
 
     def check_login(self):
 
-        logging.info('Checking oAuth login status')
+        logging.info("Instapaper:: checking login")
 
         url = "https://www.instapaper.com/api/1/account/verify_credentials"
 
@@ -69,12 +72,12 @@ class Instapaper():
 
             if(response.status_code == 200):
 
-                logging.info('User is logged in')
+                logging.info("Instapaper:: User IS logged in")
                 return True
 
             else:
 
-                logging.debug('User is not logged in')
+                logging.info("Instapaper:: User IS NOT logged in")
                 return False
 
         except Exception as error_message:
@@ -85,7 +88,7 @@ class Instapaper():
 
     def get_bookmarks(self, folder, limit):
          
-        logging.info("Fetching %d bookmarks for %s" % (limit, folder))
+        logging.info("Instapaper:: Fetching %d bookmarks for %s" % (limit, folder))
 
         url = "https://www.instapaper.com/api/1/bookmarks/list"
 
@@ -114,7 +117,7 @@ class Instapaper():
 
     def get_highlights(self, bookmark_id):
 
-        logging.info("fetching highlights for bookmark ID %d" % bookmark_id)
+        logging.info("Instapaper:: fetching highlights for bookmark ID %d" % bookmark_id)
 
         url = "https://www.instapaper.com/api/1.1/bookmarks/%d/highlights" % bookmark_id
 
@@ -140,6 +143,8 @@ class Instapaper():
 
 
     def formulate_highlights(self):
+
+        logging.info("Instapaper:: Formulating highlights")
 
         aggregated_highlights = []
 

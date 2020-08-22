@@ -15,7 +15,7 @@ class Evernote:
 
     def __init__(self, client_key, client_secret):
 
-        logging.info("Client Key and credential set")
+        logging.info("Evernote:: Instance Created")
         self.CLIENT_KEY = client_key
         self.CLIENT_SECRET = client_secret
 
@@ -27,28 +27,53 @@ class Evernote:
 
 
 
-    def login(self):
+    def login(self, oauth_token):
 
-        # Follow the OAuth 1.0 flow
+        logging.info("Evernote:: Logging in")
 
-        # 1 - Get a temporary oAuth Credential
+        if(oauth_token):
 
-        self.get_request_token(self.CLIENT_KEY, self.CLIENT_SECRET)
+            logging.info("Evernote:: Using supplied OAuth key")
 
-        # 2 - Obtain authorization from user, with the temporary oauth credential
+            # TODO - check validity of the oauth token, and if invalid initiate
+            # the oauth flow to get a new one.
 
-        self.get_user_authorization()
+            self.oauth_access_token = oauth_token
 
-        # 3 - Exchange request token and user verification token for access tokens
+            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=True, china=False)
+            self.evernote_user_store = self.evernote_client.get_user_store()
+            self.evernote_note_store = self.evernote_client.get_note_store()
 
-        self.get_access_token()
+            logging.info("Evernote:: Login Complete")
 
+        else:
 
+            logging.info("Evernote:: No OAuth Key, initiating authorisatiion flow")
+
+            # Follow the OAuth 1.0 flow
+
+            # 1 - Get a temporary oAuth Credential
+
+            self.get_request_token(self.CLIENT_KEY, self.CLIENT_SECRET)
+
+            # 2 - Obtain authorization from user, with the temporary oauth credential
+
+            self.get_user_authorization()
+
+            # 3 - Exchange request token and user verification token for access tokens
+
+            self.get_access_token()
+
+            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=True, china=False)
+            self.evernote_user_store = self.evernote_client.get_user_store()
+            self.evernote_note_store = self.evernote_client.get_note_store()
+
+            logging.info("Evernote:: Login Complete")
 
 
     def get_request_token(self, client_key, client_secret):
         
-        logging.info("Getting OAuth request keys")
+        logging.info("Evernote:: Getting OAuth request keys")
 
         callback_url = 'http://localhost:8080'
         temporary_credential_url_prod = "https://www.evernote.com/oauth"
@@ -86,7 +111,7 @@ class Evernote:
 
     def get_user_authorization(self):
 
-        logging.info("Getting User OAuth authorization permissions")
+        logging.info("Evernote:: Getting User OAuth authorization permission")
 
         authorization_url_sandbox = "https://sandbox.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
         authorization_url_production = "https://www.evernote.com/OAuth.action?oauth_token=%s" % (self.oauth_request_token)
@@ -101,21 +126,21 @@ class Evernote:
         
         if 'oauth_verifier' in params:
 
-            logging.info("User sucessfully authorised oauth flow")
+            logging.info("Evernote:: User sucessfully authorised oauth flow")
             self.oauth_verifier = params['oauth_verifier'][0]
 
             return True
 
         else:
 
-            logging.error("User OAuth authorisation failed")
+            logging.error("Evernote:: User OAuth authorisation failed")
             return False
 
 
 
     def get_access_token(self):
 
-        logging.info("getting OAuth access token")
+        logging.info("Evernote:: getting OAuth access token")
 
         url_sandbox = "https://sandbox.evernote.com/oauth"
 
@@ -145,27 +170,8 @@ class Evernote:
 
         else:
 
-            logging.error("Unable to obtain OAuth access tokens")
+            logging.error("Evernote:: Unable to obtain OAuth access tokens")
             return False
-
-
-    def connect_evernote(self, oauth_token):
-
-        if(oauth_token):
-            
-            # TODO - check validity of the oauth token, and if invalid initiate
-            # the oauth flow to get a new one.
-
-            self.oauth_access_token = oauth_token
-
-        if(self.oauth_access_token):
-
-            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=True, china=False)
-            self.evernote_user_store = self.evernote_client.get_user_store()
-            self.evernote_note_store = self.evernote_client.get_note_store()
-
-        else:
-            self.login()
 
 
     def list_notesbooks(self):
@@ -180,18 +186,15 @@ class Evernote:
 
     def create_note(self, title, content):
 
-        logging.info("Creating new evernote Note")
+        logging.info("Evernote:: Creating new evernote Note")
 
         note = Types.Note()
         note.title = title
 
-        note.content = '<?xml version="1.0" encoding="UTF-8"?>'
-        note.content += '<!DOCTYPE en-note SYSTEM ' \
-                '"http://xml.evernote.com/pub/enml2.dtd">'
-        note.content += '<en-note>Here is a new test note<br/>'
-        note.content += '</en-note>'
+        note.content = content
 
         created_note = self.evernote_note_store.createNote(note)
+
 
 
 if __name__ == "__main__":
@@ -201,7 +204,14 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     myEvernote = Evernote(secrets.evernote_client_key, secrets.evernote_client_secret)
+    myEvernote.login(secrets.evernote_oauth_token)
 
-    myEvernote.connect_evernote(secrets.evernote_oauth_token)
     myEvernote.list_notesbooks()
-    myEvernote.create_note("Test Note", False)
+
+    content = '<?xml version="1.0" encoding="UTF-8"?>'
+    content += '<!DOCTYPE en-note SYSTEM ' \
+                '"http://xml.evernote.com/pub/enml2.dtd">'
+    content += '<en-note>Here is a new test note<br/>'
+    content += '</en-note>'
+
+    myEvernote.create_note("Test Note", content)
