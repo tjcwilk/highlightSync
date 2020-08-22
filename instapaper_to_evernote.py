@@ -2,7 +2,7 @@
 
 import logging
 import secrets
-from instapaper import Instapaper
+from instapaper_lib import Instapaper
 from evernote_lib import Evernote
 from pymongo import MongoClient
 from xml.sax.saxutils import escape
