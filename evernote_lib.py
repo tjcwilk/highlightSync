@@ -178,6 +178,22 @@ class Evernote:
             print("  * ", notebook.name)
 
 
+    def create_note(self, title, content):
+
+        logging.info("Creating new evernote Note")
+
+        note = Types.Note()
+        note.title = title
+
+        note.content = '<?xml version="1.0" encoding="UTF-8"?>'
+        note.content += '<!DOCTYPE en-note SYSTEM ' \
+                '"http://xml.evernote.com/pub/enml2.dtd">'
+        note.content += '<en-note>Here is a new test note<br/>'
+        note.content += '</en-note>'
+
+        created_note = self.evernote_note_store.createNote(note)
+
+
 if __name__ == "__main__":
 
     print("---- Evernote ---- ")
@@ -188,3 +204,4 @@ if __name__ == "__main__":
 
     myEvernote.connect_evernote(secrets.evernote_oauth_token)
     myEvernote.list_notesbooks()
+    myEvernote.create_note("Test Note", False)
