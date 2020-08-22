@@ -184,16 +184,31 @@ class Evernote:
             print("  * ", notebook.name)
 
 
-    def create_note(self, title, content):
+
+    def create_note(self, title, content, notebook_guid):
 
         logging.info("Evernote:: Creating new evernote Note")
 
         note = Types.Note()
         note.title = title
-
         note.content = content
 
+        if(notebook_guid):
+            note.notebookGuid = notebook_guid
+
         created_note = self.evernote_note_store.createNote(note)
+
+
+    def get_notebook_guid(self, notebook_name):
+
+        notebooks = self.evernote_note_store.listNotebooks()
+        notebook_guid = False
+
+        for notebook in notebooks:
+            if(notebook.name == notebook_name):
+                notebook_guid = notebook.guid
+
+        return notebook_guid
 
 
 
@@ -206,7 +221,9 @@ if __name__ == "__main__":
     myEvernote = Evernote(secrets.evernote_client_key, secrets.evernote_client_secret)
     myEvernote.login(secrets.evernote_oauth_token)
 
-    myEvernote.list_notesbooks()
+    #myEvernote.list_notesbooks()
+    guid = myEvernote.get_notebook_guid('Articles')
+    print(guid)
 
     content = '<?xml version="1.0" encoding="UTF-8"?>'
     content += '<!DOCTYPE en-note SYSTEM ' \
@@ -214,4 +231,4 @@ if __name__ == "__main__":
     content += '<en-note>Here is a new test note<br/>'
     content += '</en-note>'
 
-    myEvernote.create_note("Test Note", content)
+    #myEvernote.create_note("Test Note", content)

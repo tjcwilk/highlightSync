@@ -88,7 +88,7 @@ class Instapaper():
 
     def get_bookmarks(self, folder, limit):
          
-        logging.info("Instapaper:: Fetching %d bookmarks for %s" % (limit, folder))
+        logging.info("Instapaper:: Fetching %d bookmarks from %s" % (limit, folder))
 
         url = "https://www.instapaper.com/api/1/bookmarks/list"
 
@@ -142,20 +142,20 @@ class Instapaper():
 
 
 
-    def formulate_highlights(self):
+    def formulate_highlights(self, check_count):
 
         logging.info("Instapaper:: Formulating highlights")
 
         aggregated_highlights = []
 
-        bookmarks = self.get_bookmarks("archive", 2)
+        bookmarks = self.get_bookmarks("archive", check_count)
 
         for bookmark in bookmarks:
   
             if "bookmark_id" not in bookmark:
                 continue
 
-            highlights = myInstapaper.get_highlights(bookmark['bookmark_id'])
+            highlights = self.get_highlights(bookmark['bookmark_id'])
             
             if(highlights):
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     myInstapaper = Instapaper(secrets.instapaper_consumer_id, secrets.instapaper_consumer_secret)
     myInstapaper.login(secrets.instapaper_username, secrets.instapaper_password)
     
-    formulated_highlights = myInstapaper.formulate_highlights()
+    formulated_highlights = myInstapaper.formulate_highlights(5)
     print(formulated_highlights)
 
   

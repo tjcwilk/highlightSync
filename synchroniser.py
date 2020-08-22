@@ -9,7 +9,6 @@ from evernote_lib import Evernote
 class Synchroniser():
 
 
-
     def __init__(self, sync_from, sync_to):
 
         logging.info("Synchroniser:: Instance created")
@@ -41,6 +40,65 @@ class Synchroniser():
 
 
 
+    def run_sync(self):
+
+        if(self.sync_from=="INSTAPAPER" and self.sync_to=="EVERNOTE"):
+            
+            highlights = self.instapaper_instance.formulate_highlights(2)
+            
+            for highlight in highlights:
+
+                if( self.check_already_syncd() ):
+                    logging.info("Already synchd, skipping: %s" % highlight[''])
+                    continue
+                else:
+
+                    self.save_article_to_evernote(highlight, 'Articles')
+                    
+
+
+    def check_already_syncd(self):
+
+        # TODO 
+        return False
+
+
+
+    def save_article_to_evernote(self, article, notebook):
+
+        logging.info("Synchroniser:: Saving to evernote - title: %s, (%d highlights)" % (article['title'],  len(article['highlights'])))
+
+        # Formulate evernote note
+
+        title = article['title']
+
+        url = "<div>Url: %s</div><br/><br/>" % (article['url'])
+
+        highlights = ''
+        for highlight in article['highlights']:
+            highlights += '<div>'
+            highlights += highlight['highlight_text']
+            highlights += '</div><br/>'
+
+
+        content = '<?xml version="1.0" encoding="UTF-8"?>'
+        content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
+        content += '<en-note>'
+        content += url
+        content += highlights
+        content += '</en-note>'
+
+
+        # Create note
+
+        notebook_guid = self.evernote_instance.get_notebook_guid(notebook)
+
+        self.evernote_instance.create_note(title, content, notebook_guid)
+
+
+
+
+
 if __name__ == "__main__":
     
     print("---- synchroniser ---- ")
@@ -48,9 +106,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     instapaper_to_evernote = Synchroniser("INSTAPAPER", "EVERNOTE")
-
     instapaper_to_evernote.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
     instapaper_to_evernote.setup_evernote(secrets.evernote_oauth_token)
+
+    instapaper_to_evernote.run_sync()
 
 
 
