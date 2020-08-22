@@ -25,3 +25,4 @@ instapaper_password = "REPLACE_ME"
 
 evernote_client_key = "REPLACE_ME"
 evernote_client_secret = "REPLACE_ME"
+evernote_oauth_token = False  # If you have a valid oauth access token, you can place it here

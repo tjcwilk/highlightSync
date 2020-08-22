@@ -45,6 +45,7 @@ class Evernote:
 
 
 
+
     def get_request_token(self, client_key, client_secret):
         
         logging.info("Getting OAuth request keys")
@@ -148,6 +149,34 @@ class Evernote:
             return False
 
 
+    def connect_evernote(self, oauth_token):
+
+        if(oauth_token):
+            
+            # TODO - check validity of the oauth token, and if invalid initiate
+            # the oauth flow to get a new one.
+
+            self.oauth_access_token = oauth_token
+
+        if(self.oauth_access_token):
+
+            self.evernote_client = EvernoteClient(token=self.oauth_access_token, sandbox=True, china=False)
+            self.evernote_user_store = self.evernote_client.get_user_store()
+            self.evernote_note_store = self.evernote_client.get_note_store()
+
+        else:
+            self.login()
+
+
+    def list_notesbooks(self):
+        
+        # List all of the notebooks in the user's account
+        notebooks = self.evernote_note_store.listNotebooks()
+        print("Found ", len(notebooks), " notebooks:")
+
+        for notebook in notebooks:
+            print("  * ", notebook.name)
+
 
 if __name__ == "__main__":
 
@@ -156,4 +185,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     myEvernote = Evernote(secrets.evernote_client_key, secrets.evernote_client_secret)
-    myEvernote.login()
+
+    myEvernote.connect_evernote(secrets.evernote_oauth_token)
+    myEvernote.list_notesbooks()
