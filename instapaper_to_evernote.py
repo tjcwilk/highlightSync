@@ -98,7 +98,7 @@ class Instapaper_to_evernote():
         content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
         content += '<en-note>'
         content += url
-        content += '<div>Highlights:</div><br/>'
+        content += '<div> <span style="font-weight:bold;">Highlights</span></div><br/>'
         content += highlights
         content += '</en-note>'
 
