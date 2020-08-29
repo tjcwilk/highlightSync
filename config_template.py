@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
 
-# This file holds the secret keys and passwords required for accounts.
-# Rename this file to secrets.py, and then change the corresponding 
-# fields to match your accounts.
+# This file holds config settings.
+
+# DATABASE
+
+mongo_url = 'mongodb://localhost:27017/'
 
 
-# an instapaper API key for your application. Get this from 
-# https://www.instapaper.com/main/request_oauth_consumer_token
+# INSTAPAPER
+
+# Your instapaper client API Key, from https://www.instapaper.com/main/request_oauth_consumer_token
 instapaper_consumer_id = "REPLACE_ME"
 instapaper_consumer_secret = "REPLACE_ME"
 
-# This is the username and password for your instapaper account.
-# The instapaper API incorrectly implements oAuth 1.0a. What it should
-# do is support redirecting the user of your app into an authentication
-# flow and pass pack the oauth session credentials. Instead, the API
-# forces you to take the username and password from the user, and use ot
-# to get the oauth credential. An issue ticket for this problem has already
-# been submitted to instapaper. 
+# Your instapaper credentials. Their API doesn't implement oAuth properly, so you need these
 instapaper_username = "REPLACE ME"
 instapaper_password = "REPLACE_ME"
 
-# This is the Client consumer API key and secret, for your Evernote application.
-# Request this at https://dev.evernote.com/doc/
 
+# EVERNOTE
+
+
+# Your evernote client API key, from https://dev.evernote.com/doc/
 evernote_client_key = "REPLACE_ME"
 evernote_client_secret = "REPLACE_ME"
-evernote_oauth_token = False  # If you have a valid oauth access token, you can place it here
+
+# If you have a long lasting evernote token, place it here. If not, the app will
+# initiate the oauth flow, to get one. Then, you can paste it in.
+evernote_oauth_token = False 
