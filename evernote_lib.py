@@ -117,7 +117,7 @@ class Evernote:
 
         logging.info("Evernote:: Getting User OAuth authorization permission")
 
-        endpoint_url =  "%s/OAuth.action?oauth_token=%s" (self.EVERNOTE_URL, self.oauth_request_token)
+        endpoint_url =  "%s/OAuth.action?oauth_token=%s" % (self.EVERNOTE_URL, self.oauth_request_token)
 
         print('Please authorize this application, by visiting %s' % endpoint_url)
         redirect_response = input('Paste the full redirect URL here: ')
