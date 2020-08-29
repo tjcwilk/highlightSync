@@ -5,7 +5,7 @@ import requests
 import json
 from requests_oauthlib import OAuth1
 from urllib.parse import urlsplit, parse_qs
-import secrets
+import config
 
 
 
@@ -186,8 +186,8 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    myInstapaper = Instapaper(secrets.instapaper_consumer_id, secrets.instapaper_consumer_secret)
-    myInstapaper.login(secrets.instapaper_username, secrets.instapaper_password)
+    myInstapaper = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
+    myInstapaper.login(config.instapaper_username, config.instapaper_password)
     
     formulated_highlights = myInstapaper.formulate_highlights(5)
     print(formulated_highlights)

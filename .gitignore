@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 
-secrets.py
+config.py
 .DS_Store
 .vscode/settings.json
 .vscode/settings.json

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import logging
-import secrets
+import config
 from instapaper_lib import Instapaper
 from evernote_lib import Evernote
 from pymongo import MongoClient
 from xml.sax.saxutils import escape
 import time
 from datetime import datetime
+
 
 
 class Instapaper_to_evernote():
@@ -28,7 +29,7 @@ class Instapaper_to_evernote():
 
         logging.info("Synchroniser:: Setting up instapaper")
 
-        self.instapaper_instance = Instapaper(secrets.instapaper_consumer_id, secrets.instapaper_consumer_secret)
+        self.instapaper_instance = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
         self.instapaper_instance.login(username, password)
 
         logging.info("Synchroniser:: Instapaper Setup Complete")
@@ -38,7 +39,7 @@ class Instapaper_to_evernote():
 
         logging.info("Synchroniser:: Setting up evernote")
  
-        self.evernote_instance = Evernote(secrets.evernote_client_key, secrets.evernote_client_secret)
+        self.evernote_instance = Evernote(config.evernote_client_key, config.evernote_client_secret)
         self.evernote_instance.login(oauth_token)
 
         logging.info("Synchroniser:: Evernote Setup Complete")
@@ -116,8 +117,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     synchroniser = Instapaper_to_evernote("toby")
-    synchroniser.setup_instapaper(secrets.instapaper_username, secrets.instapaper_password)
-    synchroniser.setup_evernote(secrets.evernote_oauth_token)
+    synchroniser.setup_instapaper(config.instapaper_username, config.instapaper_password)
+    synchroniser.setup_evernote(config.evernote_oauth_token)
 
     while True:
 

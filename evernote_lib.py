@@ -8,8 +8,7 @@ import evernote.edam.userstore.constants as UserStoreConstants
 import evernote.edam.type.ttypes as Types
 from evernote.api.client import EvernoteClient
 import logging
-import secrets
-
+import config
 
 
 class Evernote:
@@ -170,7 +169,7 @@ class Evernote:
             print("----------------------\n")
             print(" Your API Access token is:")
             print("\t%s" % self.oauth_access_token)
-            print("\n\n Copy/Paste this into your secrets file, to save it for next time\n")
+            print("\n\n Copy/Paste this into your config file, to save it for next time\n")
             print("--------------------------\n\n")
 
             return True
@@ -225,8 +224,8 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    myEvernote = Evernote(secrets.evernote_client_key, secrets.evernote_client_secret)
-    myEvernote.login(secrets.evernote_oauth_token)
+    myEvernote = Evernote(config.evernote_client_key, config.evernote_client_secret)
+    myEvernote.login(config.evernote_oauth_token)
 
     #myEvernote.list_notesbooks()
     guid = myEvernote.get_notebook_guid('Articles')
