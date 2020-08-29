@@ -4,10 +4,11 @@ import logging
 import config
 from instapaper_lib import Instapaper
 from evernote_lib import Evernote
-from pymongo import MongoClient
 from xml.sax.saxutils import escape
 import time
 from datetime import datetime
+import psycopg2
+from psycopg2 import OperationalError
 
 
 
@@ -20,9 +21,29 @@ class Instapaper_to_evernote():
 
         self.INSTAPAPER_SYNC_LIMIT = 20
 
-        self.db_client = MongoClient(config.mongo_url)
-        self.db = self.db_client['sync_state']
-        self.db_collection = self.db[user]
+        try:
+            self.db_connection = psycopg2.connect(  host=config.db_host,
+                                                    port = config.db_port,
+                                                    dbname=config.db_name, 
+                                                    user=config.db_user,
+                                                    password=config.db_password)
+
+            logging.info("Synchroniser:: DB connected")
+
+
+
+        except Exception as error_message:
+
+            print("Unable to connect to database :: %s" % error_message)
+            exit()
+
+
+
+    def __del__(self):
+
+        if(self.db_connection):
+            self.db_connection.close()   
+
 
 
     def setup_instapaper(self, username, password):
@@ -35,6 +56,7 @@ class Instapaper_to_evernote():
         logging.info("Synchroniser:: Instapaper Setup Complete")
 
 
+
     def setup_evernote(self, oauth_token):
 
         logging.info("Synchroniser:: Setting up evernote")
@@ -43,6 +65,7 @@ class Instapaper_to_evernote():
         self.evernote_instance.login(oauth_token)
 
         logging.info("Synchroniser:: Evernote Setup Complete")
+
 
 
     def run_sync(self):
@@ -69,6 +92,7 @@ class Instapaper_to_evernote():
                 self.db_collection.insert_one(new_sync_marker)
                 
 
+
     def check_already_syncd(self, identifier):
 
         exists = self.db_collection.find_one({"unique_id": identifier})
@@ -77,6 +101,7 @@ class Instapaper_to_evernote():
             return True
         else:
             return False
+
 
 
     def save_article_to_evernote(self, article, notebook):
@@ -108,6 +133,7 @@ class Instapaper_to_evernote():
         notebook_guid = self.evernote_instance.get_notebook_guid(notebook)
 
         self.evernote_instance.create_note(title, content, notebook_guid)
+
 
 
 if __name__ == "__main__":
