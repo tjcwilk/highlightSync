@@ -20,7 +20,7 @@ class Instapaper_to_evernote():
 
         self.INSTAPAPER_SYNC_LIMIT = 20
 
-        self.db_client = MongoClient('mongodb://localhost:27017/')
+        self.db_client = MongoClient(config.mongo_url)
         self.db = self.db_client['sync_state']
         self.db_collection = self.db[user]
 
