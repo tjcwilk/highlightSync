@@ -9,6 +9,8 @@ mongo_url = 'mongodb://localhost:27017/'
 
 # INSTAPAPER
 
+INSTAPAPER_SYNC_LIMIT = 5 # How many articles to check
+
 # Your instapaper client API Key, from https://www.instapaper.com/main/request_oauth_consumer_token
 instapaper_consumer_id = "REPLACE_ME"
 instapaper_consumer_secret = "REPLACE_ME"

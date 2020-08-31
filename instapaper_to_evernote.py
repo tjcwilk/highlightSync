@@ -19,7 +19,7 @@ class Instapaper_to_evernote():
 
         logging.info("Synchroniser:: Instance created")
 
-        self.INSTAPAPER_SYNC_LIMIT = 20
+        self.INSTAPAPER_SYNC_LIMIT = config.INSTAPAPER_SYNC_LIMIT
 
         try:
             self.db_connection = psycopg2.connect(  host=config.db_host,
