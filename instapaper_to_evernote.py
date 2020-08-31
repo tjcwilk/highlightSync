@@ -22,15 +22,14 @@ class Instapaper_to_evernote():
         self.INSTAPAPER_SYNC_LIMIT = config.INSTAPAPER_SYNC_LIMIT
 
         try:
+
             self.db_connection = psycopg2.connect(  host=config.db_host,
                                                     port = config.db_port,
                                                     dbname=config.db_name, 
                                                     user=config.db_user,
                                                     password=config.db_password)
 
-            logging.info("Synchroniser:: DB connected")
-
-
+            logging.info("Synchroniser:: connected to database")
 
         except Exception as error_message:
 
@@ -42,6 +41,7 @@ class Instapaper_to_evernote():
     def __del__(self):
 
         if(self.db_connection):
+
             self.db_connection.close()   
 
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
 
-        print("%s:: Synchronising Instapaper to Evernote =", current_time)
+        print("%s :: Synchronising Instapaper to Evernote" % current_time)
         synchroniser.run_sync()
 
         time.sleep(1800) # 1800 = 30mins, 3600 = 1 hr
