@@ -95,7 +95,19 @@ class Instapaper_to_evernote():
 
     def check_already_syncd(self, identifier):
 
-        exists = self.db_collection.find_one({"unique_id": identifier})
+        logging.info("Checking if %s is already synchd" % identifier)
+
+        cursor = self.db_connection.cursor()
+        query = "select * from sync_instapaper_evernote"
+        cursor.execute(query)
+
+        results = cursor.fetchall() 
+
+        exists = False
+
+        for row in results:
+            if (identifier == row[2]):
+                exists = True
 
         if(exists):
             return True
