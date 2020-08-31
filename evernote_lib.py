@@ -15,7 +15,7 @@ class Evernote:
 
     def __init__(self, client_key, client_secret):
 
-        if (config.EVERNOTE_SANDBOX):
+        if not (config.EVERNOTE_SANDBOX):
             self.EVERNOTE_URL = "https://www.evernote.com"
         else:
             self.EVERNOTE_URL = "https://sandbox.evernote.com"
