@@ -15,11 +15,15 @@ from psycopg2 import OperationalError
 class Instapaper_to_evernote():
 
 
-    def __init__(self, user):
+
+    def __init__(self, user_email):
 
         logging.info("Synchroniser:: Instance created")
 
+        self.USER_EMAIL = False
+        self.USER_ID = False
         self.INSTAPAPER_SYNC_LIMIT = config.INSTAPAPER_SYNC_LIMIT
+
 
         try:
 
@@ -30,6 +34,15 @@ class Instapaper_to_evernote():
                                                     password=config.db_password)
 
             logging.info("Synchroniser:: connected to database")
+
+            user_id = self.lookup_userid(user_email)
+
+            if(user_id):
+                self.USER_EMAIL = user_email
+                self.USER_ID = user_id
+            else:
+                logging.error("Unable to find user, exiting")
+                exit()
 
         except Exception as error_message:
 
@@ -43,6 +56,24 @@ class Instapaper_to_evernote():
         if(self.db_connection):
 
             self.db_connection.close()   
+
+
+
+    def lookup_userid(self, email):
+
+        logging.info("Checking user exists: %s" % email)
+
+        cursor = self.db_connection.cursor()
+
+        query = """SELECT id from users where email=%s"""
+        cursor.execute( query, (email,) )
+        results = cursor.fetchone()
+
+        if(results):
+            logging.info("User found, %s has a UID of %s" % (email, results[0]))
+            return results[0]
+        else:
+            return False
 
 
 
@@ -72,7 +103,6 @@ class Instapaper_to_evernote():
 
         highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
 
-
         for highlight in highlights:
 
             if( self.check_already_syncd(highlight['bookmark_id']) ):
@@ -82,15 +112,31 @@ class Instapaper_to_evernote():
 
             else:
 
-                self.save_article_to_evernote(highlight, 'Articles')
+                try:
 
-                new_sync_marker = { "from": "instapaper",
-                                    "to": "evernote",
-                                    "unique_id": highlight['bookmark_id'],
-                                    "unique_id_type" : 'bookmark_id'}
+                    logging.info("Not found, so synchronising: %s" % highlight['bookmark_id'] )
 
-                self.db_collection.insert_one(new_sync_marker)
-                
+                    self.save_article_to_evernote(highlight, 'Articles')
+
+                    cursor = self.db_connection.cursor()
+
+                    statement = """
+                        INSERT INTO sync_instapaper_evernote (user_id, article_uid, article_title) VALUES
+                        ( (SELECT id from users WHERE email=%s ), %s, %s );
+                    """
+
+                    values = (self.USER_EMAIL, highlight['bookmark_id'], highlight['title'])
+
+                    logging.info("Inserting new sync record into DB")
+                    cursor.execute( statement, values )
+                    self.db_connection.commit()
+                    count = cursor.rowcount
+                    logging.info("Rows updated: %s" % count)
+
+                except Exception as error:
+
+                    logging.error("Problem inserting into sync database:: %s" % error)
+
 
 
     def check_already_syncd(self, identifier):
@@ -98,18 +144,13 @@ class Instapaper_to_evernote():
         logging.info("Checking if %s is already synchd" % identifier)
 
         cursor = self.db_connection.cursor()
-        query = "select * from sync_instapaper_evernote"
-        cursor.execute(query)
+        query = "select * from sync_instapaper_evernote WHERE user_id=%s AND article_uid=%s"
+        values = (self.USER_ID, str(identifier))
+        cursor.execute(query, values)
 
-        results = cursor.fetchall() 
+        results = cursor.fetchone() 
 
-        exists = False
-
-        for row in results:
-            if (identifier == row[2]):
-                exists = True
-
-        if(exists):
+        if(results):
             return True
         else:
             return False
@@ -154,7 +195,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    synchroniser = Instapaper_to_evernote("toby")
+    synchroniser = Instapaper_to_evernote("toby@wilkins.io")
     synchroniser.setup_instapaper(config.instapaper_username, config.instapaper_password)
     synchroniser.setup_evernote(config.evernote_oauth_token)
 
@@ -165,5 +206,6 @@ if __name__ == "__main__":
 
         print("%s :: Synchronising Instapaper to Evernote" % current_time)
         synchroniser.run_sync()
+        print("Done. Waiting for next sync cycle")
 
         time.sleep(1800) # 1800 = 30mins, 3600 = 1 hr
