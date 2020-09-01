@@ -1,5 +1,3 @@
-# highlightSync
-
 # Introduction
 
 HighLightSync a tool that can gather reading highlights collected from one service,
