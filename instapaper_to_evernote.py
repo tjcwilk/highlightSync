@@ -10,16 +10,28 @@ from datetime import datetime
 import psycopg2
 
 
-
 class Instapaper_to_evernote():
 
-
+    ###############################################################################################
+    #  Class Lifecycle
+    ###############################################################################################
 
     def __init__(self, user_email):
 
-        self.USER_EMAIL = False
+        self.USER_EMAIL = user_email
         self.USER_ID = False
         self.INSTAPAPER_SYNC_LIMIT = config.INSTAPAPER_SYNC_LIMIT
+        self.db_connection = False
+
+
+    def __del__(self):
+        self.db_disconnect()
+
+    ###############################################################################################
+    # Database Handlers
+    ###############################################################################################
+
+    def db_connect(self):
 
         try:
 
@@ -31,11 +43,9 @@ class Instapaper_to_evernote():
 
             logging.info("instapaper_to_evernote:: connected to database")
 
-            user_id = self.lookup_userid(user_email)
+            user_id = self.lookup_userid(self.USER_EMAIL)
 
             if(user_id):
-
-                self.USER_EMAIL = user_email
                 self.USER_ID = user_id
 
             else:
@@ -49,13 +59,14 @@ class Instapaper_to_evernote():
             exit()
 
 
-
-    def __del__(self):
-
+    def db_disconnect(self):
         if(self.db_connection):
-            self.db_connection.close()   
+            self.db_connection.close()  
 
 
+    ###############################################################################################
+    # Utility methods
+    ###############################################################################################
 
     def lookup_userid(self, email):
 
@@ -74,21 +85,87 @@ class Instapaper_to_evernote():
             return False
 
 
+    ###############################################################################################
+    # Synchronisation Handlers
+    ###############################################################################################
 
-    def get_evernote_session_token_from_db(self):
+    def run_sync(self):
 
-        logging.info("instapaper_to_evernote:: Fetching users evernote oAuth token from database")
+        print("--> Checking last %s articles" % self.INSTAPAPER_SYNC_LIMIT)
 
-        query = "SELECT session_token from evernote_sessions WHERE user_id=%s"
+        highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
+
+        for highlight in highlights:
+
+            if( self.check_already_syncd(highlight['bookmark_id']) ):
+
+                # Skip sync if contained in sync database
+
+                logging.info("instapaper_to_evernote:: Already synchd, skipping: %s" % highlight['title'])
+                continue
+
+            else:
+
+                # Save, and insert sync record into database
+
+                print( "--> Saving new article: (%s) - %s" % (highlight['bookmark_id'], highlight['title']) )
+
+                try:
+
+                    # Create new note in evernote
+
+                    self.save_article_to_evernote(highlight, 'Articles')
+
+                    # Insert new database sync record
+
+                    logging.info("instapaper_to_evernote:: inserting db sync record")
+
+                    self.db_connect()
+                    cursor = self.db_connection.cursor()
+
+                    statement = """
+                        INSERT INTO sync_instapaper_evernote (user_id, article_uid, article_title) VALUES
+                        ( (SELECT id from users WHERE email=%s ), %s, %s );
+                    """
+                    values = (self.USER_EMAIL, highlight['bookmark_id'], highlight['title'])
+
+                    cursor.execute( statement, values )
+                    self.db_connection.commit()
+                    count = cursor.rowcount
+
+                    self.db_disconnect()
+
+                    logging.info("instapaper_to_evernote:: Rows updated: %s" % count)
+
+                except Exception as error:
+
+                    logging.error("instapaper_to_evernote:: Problem inserting into sync database:: %s" % error)
+
+
+    def check_already_syncd(self, identifier):
+
+        logging.info("instapaper_to_evernote:: Checking if %s is already synchd" % identifier)
+
+        self.db_connect()
+
         cursor = self.db_connection.cursor()
-        cursor.execute(query, (self.USER_ID,))
-        results = cursor.fetchone()
+        query = "select * from sync_instapaper_evernote WHERE user_id=%s AND article_uid=%s"
+        values = (self.USER_ID, str(identifier))
+        cursor.execute(query, values)
 
-        logging.info("instapaper_to_evernote:: Session token for user found in database: %s" % results)
+        results = cursor.fetchone() 
 
-        return results[0]
+        self.db_disconnect()
+
+        if(results):
+            return True
+        else:
+            return False
 
 
+    ###############################################################################################
+    # Instapaper Handlers
+    ###############################################################################################
 
     def setup_instapaper(self, username, password):
 
@@ -103,6 +180,8 @@ class Instapaper_to_evernote():
 
             logging.info("instapaper_to_evernote:: Getting instapaper credentials from database")
 
+            self.db_connect()
+
             query = "SELECT instapaper_username, instapaper_password from instapaper_sessions WHERE user_id=%s"
             cursor = self.db_connection.cursor()
             cursor.execute(query, (self.USER_ID,))
@@ -113,8 +192,12 @@ class Instapaper_to_evernote():
             self.instapaper_instance = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
             self.instapaper_instance.login( results[0], results[1] )
 
+            self.db_disconnect()
 
 
+    ###############################################################################################
+    # Evernote Handlers
+    ###############################################################################################
 
     def setup_evernote(self, oauth_token):
 
@@ -129,71 +212,23 @@ class Instapaper_to_evernote():
         else:
 
             logging.info("instapaper_to_evernote:: Getting evernote oauth token from database")
-            token_from_db = self.get_evernote_session_token_from_db()
+
+            self.db_connect()
+
+            query = "SELECT session_token from evernote_sessions WHERE user_id=%s"
+            cursor = self.db_connection.cursor()
+            cursor.execute(query, (self.USER_ID,))
+            results = cursor.fetchone()
+
+            self.db_disconnect()
+
+            logging.info("instapaper_to_evernote:: Session token for user found in database: %s" % results)
+
             self.evernote_instance = Evernote(config.evernote_client_key, config.evernote_client_secret)
-            self.evernote_instance.login(token_from_db)
+            self.evernote_instance.login( results[0] )
 
 
             logging.info("instapaper_to_evernote:: Synchroniser:: Evernote Setup Complete")
-
-
-
-    def run_sync(self):
-
-        highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
-
-        for highlight in highlights:
-
-            if( self.check_already_syncd(highlight['bookmark_id']) ):
-
-                logging.info("instapaper_to_evernote:: Already synchd, skipping: %s" % highlight['title'])
-                continue
-
-            else:
-
-                try:
-
-                    logging.info("instapaper_to_evernote:: Not found, so synchronising: %s" % highlight['bookmark_id'] )
-
-                    self.save_article_to_evernote(highlight, 'Articles')
-
-                    cursor = self.db_connection.cursor()
-
-                    statement = """
-                        INSERT INTO sync_instapaper_evernote (user_id, article_uid, article_title) VALUES
-                        ( (SELECT id from users WHERE email=%s ), %s, %s );
-                    """
-
-                    values = (self.USER_EMAIL, highlight['bookmark_id'], highlight['title'])
-
-                    logging.info("instapaper_to_evernote:: Inserting new sync record into DB")
-                    cursor.execute( statement, values )
-                    self.db_connection.commit()
-                    count = cursor.rowcount
-                    logging.info("instapaper_to_evernote:: Rows updated: %s" % count)
-
-                except Exception as error:
-
-                    logging.error("instapaper_to_evernote:: Problem inserting into sync database:: %s" % error)
-
-
-
-    def check_already_syncd(self, identifier):
-
-        logging.info("instapaper_to_evernote:: Checking if %s is already synchd" % identifier)
-
-        cursor = self.db_connection.cursor()
-        query = "select * from sync_instapaper_evernote WHERE user_id=%s AND article_uid=%s"
-        values = (self.USER_ID, str(identifier))
-        cursor.execute(query, values)
-
-        results = cursor.fetchone() 
-
-        if(results):
-            return True
-        else:
-            return False
-
 
 
     def save_article_to_evernote(self, article, notebook):
@@ -227,14 +262,14 @@ class Instapaper_to_evernote():
         self.evernote_instance.create_note(title, content, notebook_guid)
 
 
+###################################################################################################
+# MAIN - TODO - move this into a new synchroniser runner file
+###################################################################################################
+
 
 if __name__ == "__main__":
-    
-    print("---- synchronise instapaper to evernote ---- ")
 
-    
-
-    logging.basicConfig(level=logging.INFO)
+    #logging.basicConfig(level=logging.INFO)
 
     synchroniser = Instapaper_to_evernote("toby@wilkins.io")
     synchroniser.setup_instapaper(False, False)
@@ -245,8 +280,8 @@ if __name__ == "__main__":
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
 
-        print("%s :: Synchronising Instapaper to Evernote" % current_time)
+        print("-> Instapaper_to_evernote sync started @ %s" % current_time)
         synchroniser.run_sync()
-        print("Done. Waiting for next sync cycle")
+        print("--> sync complete.")
 
         time.sleep(1800) # 1800 = 30mins, 3600 = 1 hr
