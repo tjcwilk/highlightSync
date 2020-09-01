@@ -216,26 +216,3 @@ class Evernote:
                 notebook_guid = notebook.guid
 
         return notebook_guid
-
-
-
-if __name__ == "__main__":
-
-    print("---- Evernote ---- ")
-
-    logging.basicConfig(level=logging.INFO)
-
-    myEvernote = Evernote(config.evernote_client_key, config.evernote_client_secret)
-    myEvernote.login(config.evernote_oauth_token)
-
-    #myEvernote.list_notesbooks()
-    guid = myEvernote.get_notebook_guid('Articles')
-    print(guid)
-
-    content = '<?xml version="1.0" encoding="UTF-8"?>'
-    content += '<!DOCTYPE en-note SYSTEM ' \
-                '"http://xml.evernote.com/pub/enml2.dtd">'
-    content += '<en-note>Here is a new test note<br/>'
-    content += '</en-note>'
-
-    #myEvernote.create_note("Test Note", content)

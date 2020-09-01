@@ -175,21 +175,3 @@ class Instapaper():
 
 
         return aggregated_highlights
-
-
-
-
-
-if __name__ == "__main__":
-
-    print("---- Instapaper Sync ---- ")
-
-    logging.basicConfig(level=logging.INFO)
-
-    myInstapaper = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
-    myInstapaper.login(config.instapaper_username, config.instapaper_password)
-    
-    formulated_highlights = myInstapaper.formulate_highlights(5)
-    print(formulated_highlights)
-
-  
