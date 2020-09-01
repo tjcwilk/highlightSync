@@ -1,6 +1,6 @@
 # Introduction
 
-HighLightSync a tool that can gather reading highlights collected from one service,
+HighlightSync isa tool that can gather reading highlights collected from one service,
 and save them in a different note taking tool.
 
 This is particularly helpful when you read a lot of online digital content, but want
