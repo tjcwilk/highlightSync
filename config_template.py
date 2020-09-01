@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 #
-# Static configuration variables
+# Synchroniser configration.
+# 
+# INTRUCTIONS -
+#   Rename this file to config.py, and replace the config with your details.
 #
 
 
