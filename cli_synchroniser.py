@@ -39,7 +39,6 @@ class Synchroniser:
 
 if __name__ == "__main__":
 
-
     my_synchroniser = Synchroniser()
 
     toby_instapaper_to_evernote = Instapaper_to_evernote("toby@wilkins.io")
