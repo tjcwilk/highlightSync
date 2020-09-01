@@ -32,6 +32,15 @@ your own information. You will need some API keys from the service providers,
 and a postgresql database to point the synchroniser at.
 
 
+# Usage
+
+At the moment, this project is still in early stage development. At some point I will
+make a decent client for it, but there isn't one available yet.
+
+Feel free to make use of the modules in your own project. Alternativly, `cli_synchroniser.py` 
+can be run from the command line, that runs the synchronisation operations. You will need to 
+edit the file, and add your own synchronisation jobs in __main__ at the bottom.
+
 
 # Roadmap
 
@@ -45,6 +54,11 @@ Save locations:
 - [X] Evernote
 - [ ] Notion
 - [ ] Roam Research
+
+
+# Why do I spell synchronisation wrong?
+
+Because i'm British.
 
 
 
