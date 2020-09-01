@@ -8,7 +8,6 @@ from xml.sax.saxutils import escape
 import time
 from datetime import datetime
 import psycopg2
-from psycopg2 import OperationalError
 
 
 
@@ -23,7 +22,6 @@ class Instapaper_to_evernote():
         self.USER_EMAIL = False
         self.USER_ID = False
         self.INSTAPAPER_SYNC_LIMIT = config.INSTAPAPER_SYNC_LIMIT
-
 
         try:
 
@@ -54,7 +52,6 @@ class Instapaper_to_evernote():
     def __del__(self):
 
         if(self.db_connection):
-
             self.db_connection.close()   
 
 
@@ -77,6 +74,21 @@ class Instapaper_to_evernote():
 
 
 
+    def get_session_token_from_db(self):
+
+        logging.info("Fetching users evernote oAuth token from database")
+
+        query = "SELECT session_token from evernote_sessions WHERE user_id=%s"
+        cursor = self.db_connection.cursor()
+        cursor.execute(query, (self.USER_ID,))
+        results = cursor.fetchone()
+
+        logging.info("Session token for user found in database: %s" % results)
+
+        return results[0]
+
+
+
     def setup_instapaper(self, username, password):
 
         logging.info("Synchroniser:: Setting up instapaper")
@@ -91,11 +103,22 @@ class Instapaper_to_evernote():
     def setup_evernote(self, oauth_token):
 
         logging.info("Synchroniser:: Setting up evernote")
- 
-        self.evernote_instance = Evernote(config.evernote_client_key, config.evernote_client_secret)
-        self.evernote_instance.login(oauth_token)
 
-        logging.info("Synchroniser:: Evernote Setup Complete")
+        if(oauth_token):
+ 
+            logging.info("Getting evernote oauth token from config")
+            self.evernote_instance = Evernote(config.evernote_client_key, config.evernote_client_secret)
+            self.evernote_instance.login(oauth_token)
+
+        else:
+
+            logging.info("Getting evernote oauth token from database")
+            token_from_db = self.get_session_token_from_db()
+            self.evernote_instance = Evernote(config.evernote_client_key, config.evernote_client_secret)
+            self.evernote_instance.login(token_from_db)
+
+
+            logging.info("Synchroniser:: Evernote Setup Complete")
 
 
 
@@ -197,7 +220,7 @@ if __name__ == "__main__":
 
     synchroniser = Instapaper_to_evernote("toby@wilkins.io")
     synchroniser.setup_instapaper(config.instapaper_username, config.instapaper_password)
-    synchroniser.setup_evernote(config.evernote_oauth_token)
+    synchroniser.setup_evernote(False)
 
     while True:
 
