@@ -49,6 +49,3 @@ if __name__ == "__main__":
     my_synchroniser.add(  { "type": "INSTAPAPER_TO_EVERNOTE", "object" : toby_instapaper_to_evernote } )
 
     my_synchroniser.start()
-
-
-
