@@ -1,32 +1,31 @@
 #!/usr/bin/env python3
 
-# This file holds config settings.
-
-# DATABASE
-
-mongo_url = 'mongodb://localhost:27017/'
+#
+# Static configuration variables
+#
 
 
-# INSTAPAPER
+# DATABASE (Postgresql)
+db_host = "REPLACE_ME"
+db_port = 5432
+db_name = "REPLACE_ME"
+db_user = "REPLACE_ME"
+db_password = "REPLACE_ME"
 
-INSTAPAPER_SYNC_LIMIT = 5 # How many articles to check
+#
+# INSTAPAPER. Get your api key from https://www.instapaper.com/main/request_oauth_consumer_token
+# if username & password is False, it will look up the creds in the database instead
 
-# Your instapaper client API Key, from https://www.instapaper.com/main/request_oauth_consumer_token
+INSTAPAPER_SYNC_LIMIT = 5
 instapaper_consumer_id = "REPLACE_ME"
 instapaper_consumer_secret = "REPLACE_ME"
-
-# Your instapaper credentials. Their API doesn't implement oAuth properly, so you need these
 instapaper_username = "REPLACE ME"
 instapaper_password = "REPLACE_ME"
 
+#
+# EVERNOTE. Get your API key from https://dev.evernote.com/doc/
+# if the oAuth token is false, it will look it up in the database instead
 
-# EVERNOTE
-
-
-# Your evernote client API key, from https://dev.evernote.com/doc/
 evernote_client_key = "REPLACE_ME"
 evernote_client_secret = "REPLACE_ME"
-
-# If you have a long lasting evernote token, place it here. If not, the app will
-# initiate the oauth flow, to get one. Then, you can paste it in.
-evernote_oauth_token = False 
+evernote_oauth_token = False # Replace with your oAuth token. 
