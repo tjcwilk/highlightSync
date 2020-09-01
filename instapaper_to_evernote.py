@@ -89,9 +89,9 @@ class Instapaper_to_evernote():
     # Synchronisation Handlers
     ###############################################################################################
 
-    def run_sync(self):
+    def run(self):
 
-        print("--> Checking last %s articles" % self.INSTAPAPER_SYNC_LIMIT)
+        print("---> Checking last %s articles" % self.INSTAPAPER_SYNC_LIMIT)
 
         highlights = self.instapaper_instance.formulate_highlights(self.INSTAPAPER_SYNC_LIMIT)
 
@@ -108,7 +108,7 @@ class Instapaper_to_evernote():
 
                 # Save, and insert sync record into database
 
-                print( "--> Saving new article: (%s) - %s" % (highlight['bookmark_id'], highlight['title']) )
+                print( "---> Saving new article: (%s) - %s" % (highlight['bookmark_id'], highlight['title']) )
 
                 try:
 
@@ -260,28 +260,3 @@ class Instapaper_to_evernote():
         notebook_guid = self.evernote_instance.get_notebook_guid(notebook)
 
         self.evernote_instance.create_note(title, content, notebook_guid)
-
-
-###################################################################################################
-# MAIN - TODO - move this into a new synchroniser runner file
-###################################################################################################
-
-
-if __name__ == "__main__":
-
-    #logging.basicConfig(level=logging.INFO)
-
-    synchroniser = Instapaper_to_evernote("toby@wilkins.io")
-    synchroniser.setup_instapaper(False, False)
-    synchroniser.setup_evernote(False)
-
-    while True:
-
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-
-        print("-> Instapaper_to_evernote sync started @ %s" % current_time)
-        synchroniser.run_sync()
-        print("--> sync complete.")
-
-        time.sleep(1800) # 1800 = 30mins, 3600 = 1 hr
