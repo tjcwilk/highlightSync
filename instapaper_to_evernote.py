@@ -74,7 +74,7 @@ class Instapaper_to_evernote():
 
 
 
-    def get_session_token_from_db(self):
+    def get_evernote_session_token_from_db(self):
 
         logging.info("Fetching users evernote oAuth token from database")
 
@@ -93,10 +93,25 @@ class Instapaper_to_evernote():
 
         logging.info("Synchroniser:: Setting up instapaper")
 
-        self.instapaper_instance = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
-        self.instapaper_instance.login(username, password)
+        if(username and password):
 
-        logging.info("Synchroniser:: Instapaper Setup Complete")
+            self.instapaper_instance = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
+            self.instapaper_instance.login(username, password)
+
+        else:
+
+            logging.info("Getting instapaper credentials from database")
+
+            query = "SELECT instapaper_username, instapaper_password from instapaper_sessions WHERE user_id=%s"
+            cursor = self.db_connection.cursor()
+            cursor.execute(query, (self.USER_ID,))
+            results = cursor.fetchone()
+
+            logging.info("Instapaper credentials found in database: %s, %s" % (results[0], results[1]) )
+
+            self.instapaper_instance = Instapaper(config.instapaper_consumer_id, config.instapaper_consumer_secret)
+            self.instapaper_instance.login( results[0], results[1] )
+
 
 
 
@@ -113,7 +128,7 @@ class Instapaper_to_evernote():
         else:
 
             logging.info("Getting evernote oauth token from database")
-            token_from_db = self.get_session_token_from_db()
+            token_from_db = self.get_evernote_session_token_from_db()
             self.evernote_instance = Evernote(config.evernote_client_key, config.evernote_client_secret)
             self.evernote_instance.login(token_from_db)
 
@@ -219,7 +234,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     synchroniser = Instapaper_to_evernote("toby@wilkins.io")
-    synchroniser.setup_instapaper(config.instapaper_username, config.instapaper_password)
+    synchroniser.setup_instapaper(False, False)
     synchroniser.setup_evernote(False)
 
     while True:
