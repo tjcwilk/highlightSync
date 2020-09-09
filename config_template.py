@@ -29,6 +29,7 @@ instapaper_password = "REPLACE_ME"
 # EVERNOTE. Get your API key from https://dev.evernote.com/doc/
 # if the oAuth token is false, it will look it up in the database instead
 
+EVERNOTE_SANDBOX = False
 evernote_client_key = "REPLACE_ME"
 evernote_client_secret = "REPLACE_ME"
 evernote_oauth_token = False # Replace with your oAuth token. 
